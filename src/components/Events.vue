@@ -1,8 +1,8 @@
 <template>
   <div id="trends-table" class="h-100">
-    <h1>Таблица</h1>    
+    <h1>События</h1>    
     <div class="row">
-      <div class="col-lg-11">
+      <div class="col-lg-10">
         <b-input-group>
           <template v-slot:prepend>
             <b-input-group-text >Временной интервал</b-input-group-text>
@@ -28,27 +28,21 @@
           ></b-form-datepicker>
         </b-input-group>
       </div>  
-      <div class="col-lg-1">
-        <b-button variant="outline-primary" @click="prepareTableData">Таблица</b-button>
+      <div class="col-lg-2">
+        <b-button variant="outline-primary" @click="prepareTableData">Просмотр событий</b-button>
       </div>
     </div>
     <div class="row">
       <div class="col-lg-12">
         <b-input-group>
           <template v-slot:prepend>
-            <b-input-group-text >Объект</b-input-group-text>
+            <b-input-group-text >Тип события</b-input-group-text>
           </template>
           <b-form-select 
-            id="objectsList" 
-            text-field="name"
-            value-field="name"
-            :options="$route.params.objects" 
-            :disabled="tableIsNotReady"
-            ref="objectsList"
-            @change="selectObject">
-            <!-- <template v-slot:first>
-              <b-form-select-option value="all" enabled>Отобразить все объекты</b-form-select-option>
-            </template> -->
+            v-model="filter"
+            :options="filterMsgTypeOptions" 
+            :disabled="!showTable"
+            >
           </b-form-select>
         </b-input-group>
       </div>
@@ -60,7 +54,7 @@
           v-model="currentPage"
           :total-rows="totalRows"
           :per-page="perPage"
-          aria-controls="objects-table"
+          aria-controls="events-table"
           align="fill"
           size="sm"
           class="my-0"
@@ -68,31 +62,34 @@
       </div>
       
     </div>
-    <div class="row" >
-      <div class="col-lg-12" v-if="tableData!=[]" >
+    <div class="row h-100" >
+      <div class="col-lg-12 h-100 mh-100" v-if="showTable">
         <b-table 
-          id="objects-table"
+          id="events-table"
           ref="objects-table"
+          :busy="isBusy" 
           :fields="fields"
           :items="tableData" 
           :per-page="perPage"
           :current-page="currentPage"
+          :filter="filter"
+          :filter-function="filterMsgType"
           small
           hover
-          sticky-header="700px"
-          responsive
           sortable=true
           height='800px'
-          class="mt-3" 
-          outlined>
-          <template v-slot:cell(date_time)="data">
-            {{ (new Date(data.value)).toLocaleDateString("ru", { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }) }}  
-          </template>
+          class="mt-3 h-100" 
+          outlined
+          @filtered="onFiltered">
           <template v-slot:table-busy>
+            
             <div class="text-center text-danger my-2">
               <b-spinner class="align-middle"></b-spinner>
               <strong>Загрузка...</strong>
             </div>
+          </template>
+          <template v-slot:cell(date_time)="data">
+            {{ (new Date(data.value)).toLocaleDateString("ru", { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }) }}  
           </template>
         </b-table>
       </div>
@@ -109,73 +106,67 @@ export default {
   name: 'TrendsTable',
   data(){
     return {
-      tableIsNotReady: true,
-      tableData: [],
-      objectsData: [],
-
+      
       dateTo: null,
       dateFrom: null,
+    
+      tableData: [],
 
-      fields: [],
+      isBusy: true,
+      showTable: false,
+      
+      fields: [
+        { key: 'date_time',   label: 'Время'},
+        { key: 'msg_prjmark', label: 'Объект'},
+        { key: 'msg_user',    label: 'Пользователь'},
+        { key: 'msg_text',    label: 'Текст сообщения'},        
+      ],
 
       // isBusy: true,
       perPage: 16,
       currentPage: 1,
+      totalRows: 1,      
+
+      rowColors:{
+        3: 'danger',
+        103: 'success'
+      },
+
+      filterOn: ['msg_type'],
+      filter: null,
+      filterMsgTypeOptions: [
+        { value: null, text: 'Все'},
+        { value: '3', text: 'Неисправность оборудования'},
+        { value: '103', text: 'Восстановление работоспособности оборудования, значение контролируемого параметра ниже порогового'}
+      ]
 
     }
   },
   methods: {
     async prepareTableData(){
       if(this.dateFrom != null && this.dateTo != null){
-        this.tableIsNotReady = true;
-        this.objectsData = [];
-        this.tableData = [];        
-        await this.$route.params.objects.forEach(async element => {
-          const newObjectData = { 
-            name: element,
-            data: await this.getObjectData(element)
-            };
-          // console.log('newObjectData', newObjectData);
-          this.objectsData.push(newObjectData);
-        });        
-
-        this.tableIsNotReady = false;
-        await this.selectObject(this.$route.params.objects[0]);
-
+        this.showTable = true;
+        this.tableData = (await this.axios.get(`${api.host}/event/${this.dateFrom}/${this.dateTo}/data`)).data;
+        for (let i = 0; i < this.tableData.length; i++) {
+          const event = this.tableData[i];
+          event._rowVariant = this.rowColors[event.msg_type];
+          this.tableData[i] = event;
+        }
+        this.totalRows = this.tableData.length;
+        this.isBusy = false;
         return;
       }
       alert("Выберите интервал времени!");
     },
-
-    async selectObject(value){
-      //если выбран конкретный объект
-      for (let i = 0; i < this.objectsData.length; i++) {
-        let object = this.objectsData[i];
-        // console.log('checking object', object);
-        if(object.name == value){
-          this.fields = [];
-          Object.keys(object.data[0]).forEach(element => {
-              this.fields.push({
-              key: element,
-              sortable: true
-            })           
-          });
-          this.tableData = object.data;
-          return;
-        }
-      }
+    filterMsgType(item, msgType){
+      return item['msg_type'] == msgType;
     },
-
-    async getObjectData(tableName){      
-      var dataQuery = `${api.host}/object/${tableName}/${this.dateFrom}/${this.dateTo}/data`;
-      var newData = (await this.axios.get(dataQuery)).data;
-      return newData;
+    onFiltered(filteredItems) {
+      this.totalRows = filteredItems.length;
+      this.currentPage = 1;
     }
   },
   computed: {
-    totalRows() {
-      return this.tableData.length
-    },
   },
   
   created() {

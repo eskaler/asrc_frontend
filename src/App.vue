@@ -1,24 +1,23 @@
 <template>
   <div id="app" style="height: 1024px">
     <!-- https://getbootstrap.com/docs/4.0/examples/starter-template/?# -->
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#">Визуализация архивов АСРК</a>
+  
+  <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+        <a href="#" class="navbar-brand">АСРК. Визуализация архивных данных</a>
+        <div id="navbarMenu">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <router-link to="/trends" class="nav-link" active-class="active">Тренды</router-link>
+                </li>
+                <li class="nav-item">
+                    <router-link to="/events" class="nav-link" active-class="active">События</router-link>
+                </li>
+            </ul>
+        </div>
 
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="#"><router-link to="/trends">Тренды</router-link><span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">События</a>
-        </li>
-      </ul>
-      <!-- <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search" />
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-      </form> -->
-    </nav>
+    </nav>  
 
-    <main role="main" class="container-fluid h-100" style="padding-top:65px">
+    <main role="main" class="container-fluid h-100" style="padding-top:10px">
 
       
         <router-view ></router-view>

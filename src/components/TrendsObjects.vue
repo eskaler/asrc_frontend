@@ -66,6 +66,7 @@
                 :current-page="currentPage"
                 :filter="filter"
                 @row-selected="onAddRowSelected"
+                @filtered="onFiltered"
                 small
                 selectable
                 hover
@@ -80,7 +81,7 @@
             </div>
 
           </div>
-          <div class="col-lg-1 justify-content-center">
+          <div class="col-lg-1 justify-content-center ml-3">
             <div class="row">
               <b-button variant="success" @click="addSelectedObjects">
                 <b-icon icon="arrow-right"></b-icon> Добавить объект</b-button>
@@ -125,13 +126,15 @@ export default {
       objects: [],
       selectedToAdd: [],
       selectedToRemove: [],
-
+      
       selectedObjects: [],
       
       //параметры таблицы объектов
       isBusy: true,
       perPage: 16,
       currentPage: 1,
+      totalRows: 1,
+      
       filter: null,
       fields: [
           {
@@ -152,19 +155,13 @@ export default {
     onRemoveRowSelected(items) {
       this.selectedToRemove = items;
     },
+    onFiltered(filteredItems) {
+      this.totalRows = filteredItems.length;
+      this.currentPage = 1;
+    },
     addSelectedObjects(){
       
       this.selectedObjects = this.selectedObjects.concat(this.selectedToAdd.filter((item) => this.selectedObjects.indexOf(item) < 0))
-
-      // var a = this.selectedObjects.concat(this.selectedToAdd);
-      // for(var i=0; i<a.length; ++i) {
-      //     for(var j=i+1; j<a.length; ++j) {
-      //         if(a[i] === a[j])
-      //             a.splice(j--, 1);
-      //     }
-      // }
-      
-      // this.selectedObjects = a ;
       this.$refs.objectsTable.clearSelected();
     },
     removeSelectedObjects(){
@@ -178,13 +175,9 @@ export default {
         }
       });
       this.$refs.selectedObjectsTable.clearSelected();
-      
     }
   },
   computed: {
-    totalRows() {
-      return this.objects.length
-    },
     objectNames(){
       var names = [];
       for (let i = 0; i < this.selectedObjects.length; i++) {
@@ -197,6 +190,7 @@ export default {
   mounted(){
     this.axios.get(`${api.host}/object/all`).then(response =>{
       this.objects = response.data;
+      this.totalRows = this.objects.length;
       this.isBusy = !this.isBusy;
     })
   }

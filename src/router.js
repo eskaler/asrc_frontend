@@ -14,17 +14,22 @@ export default new Router({
     {
       path: '/trends',
       name: 'trends-objects',
-      component: () => import(/* webpackChunkName: "contacts" */ './components/TrendsObjects.vue'),
+      component: () => import(/* webpackChunkName: "trendsobjects" */ './components/TrendsObjects.vue'),
     },
     {
       path: '/trends/:objects+/graph',
       name: 'trends-graph',
-      component: () => import(/* webpackChunkName: "contacts" */ './components/TrendsGraph.vue'),
+      component: () => import(/* webpackChunkName: "trendsgraph" */ './components/TrendsGraph.vue'),
     },
     {
       path: '/trends/:objects+/table',
       name: 'trends-table',
-      component: () => import(/* webpackChunkName: "contacts" */ './components/TrendsTable.vue'),
-    }   
+      component: () => import(/* webpackChunkName: "trendstable" */ './components/TrendsTable.vue'),
+    },
+    {
+      path: '/events',
+      name: 'events',
+      component: () => import(/* webpackChunkName: "events" */ './components/Events.vue'),
+    }
   ]
 })

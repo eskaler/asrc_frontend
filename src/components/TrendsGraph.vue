@@ -46,6 +46,7 @@
             :options="$route.params.objects" 
             :disabled="graphIsNotReady"
             ref="objectsList"
+            
             @change="selectObject">
             <template v-slot:first>
               <b-form-select-option value="all" enabled>Отобразить все объекты</b-form-select-option>
@@ -67,9 +68,12 @@
           :fields="fields" 
           small
           hover
-          sticky-header
+          sticky-header="700px"
           height=800
           class="mt-3" outlined>
+          <template v-slot:cell(date_time)="data">
+            {{ (new Date(data.value)).toLocaleDateString("ru", { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }) }}  
+          </template>
           <template v-slot:table-busy>
             <div class="text-center text-danger my-2">
               <b-spinner class="align-middle"></b-spinner>
@@ -87,6 +91,7 @@
 <script>
 import VuePlotly from '@statnett/vue-plotly'
 const api = require('./../utils/apihost');
+const logIcon = require('./../assets/logIcon');
 import Plotly from 'plotly.js'
 import plotFR from 'plotly.js/lib/locales/ru'
 
@@ -131,8 +136,10 @@ export default {
         {
           name: 'Логарифмическая / линейная',
           direction: 'up',
-          click: this.switchLogLinear
+          click: this.switchLogLinear,
+          icon: logIcon
         }],
+        modeBarButtonsToRemove: ['lasso2d']
       },
 
       // isBusy: true,
@@ -255,7 +262,7 @@ export default {
             newData.upRange.x = newData.x;
             newData.upRange.name = 'Верхний порог';
             newData.upRange.type = 'scatter';
-            newData.upRange.fill = 'tonexty';
+            newData.upRange.fill = 'tozeroy';
             newData.upRange.line = { color: 'rgb(255, 0, 0)'};
           }
           if(column.description == 'downRange'){
@@ -263,7 +270,7 @@ export default {
             newData.downRange.x = newData.x;
             newData.downRange.name = 'Нижний порог';
             newData.downRange.type = 'scatter';
-            newData.downRange.fill = 'tonexty';
+            newData.downRange.fill = 'tozeroy';
             newData.downRange.line = { color: 'rgb(0, 255, 0)'};
           }
           if(column.datatype == "boolean"){
