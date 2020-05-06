@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <div class="row">
           <div class="col-lg-8"><h2>Выбор объектов</h2> </div>
-          <div class="col-lg-2">
+          <div class="col-lg-1">
             <router-link 
               v-if="selectedObjects.length > 0" 
               :to="{name: 'trends-graph', params: {objects: this.objectNames}}">
@@ -11,12 +11,20 @@
                 <b-icon icon="graph-up"></b-icon> График</b-button>
             </router-link>
           </div>
-          <div class="col-lg-2">
+          <div class="col-lg-1">
             <router-link 
               v-if="selectedObjects.length > 0" 
               :to="{name: 'trends-table', params: {objects: this.objectNames}}">
               <b-button variant="outline-primary">
                 <b-icon icon="table"></b-icon> Таблица</b-button>
+            </router-link>
+          </div>
+          <div class="col-lg-1">
+            <router-link 
+              v-if="selectedObjects.length > 0" 
+              :to="{name: 'events', params: {objects: this.objectNames}}">
+              <b-button variant="outline-primary">
+                <b-icon icon="clock"></b-icon> События</b-button>
             </router-link>
           </div>
       </div>
@@ -90,6 +98,10 @@
               <b-button variant="danger" @click="removeSelectedObjects">
                 <b-icon icon="arrow-left"></b-icon> Удалить объект</b-button>  
             </div>
+            <div class="row">
+              <b-button variant="danger" @click="removeAllSelectedObjects">
+                <b-icon icon="arrow-left"></b-icon> Удалить все</b-button>  
+            </div>
           </div>
           <div class="col-lg">
             <b-table 
@@ -161,7 +173,8 @@ export default {
     },
     addSelectedObjects(){
       
-      this.selectedObjects = this.selectedObjects.concat(this.selectedToAdd.filter((item) => this.selectedObjects.indexOf(item) < 0))
+      this.selectedObjects = this.selectedObjects.concat(this.selectedToAdd.filter((item) => this.selectedObjects.indexOf(item) < 0));
+      localStorage.setItem('selectedObjects', JSON.stringify(this.selectedObjects));
       this.$refs.objectsTable.clearSelected();
     },
     removeSelectedObjects(){
@@ -174,6 +187,12 @@ export default {
           }
         }
       });
+      localStorage.setItem('selectedObjects', JSON.stringify(this.selectedObjects));
+      this.$refs.selectedObjectsTable.clearSelected();
+    },
+    removeAllSelectedObjects(){
+      this.selectedObjects = [];
+      localStorage.removeItem('selectedObjects');
       this.$refs.selectedObjectsTable.clearSelected();
     }
   },
@@ -188,11 +207,15 @@ export default {
     }
   },
   mounted(){
+    console.log(localStorage);
     this.axios.get(`${api.host}/object/all`).then(response =>{
       this.objects = response.data;
       this.totalRows = this.objects.length;
       this.isBusy = !this.isBusy;
     })
+    if(typeof(localStorage['selectedObjects']) == 'undefined')
+      return;
+    this.selectedObjects = JSON.parse(localStorage['selectedObjects']);
   }
 
 }

@@ -13,7 +13,7 @@
               v-model="dateFrom"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
               
-              initial-date="2019-09-05"
+              initial-date="2019-07-05"
               placeholder="От"
               locale="ru"
           ></b-form-datepicker>
@@ -21,7 +21,7 @@
               id="datepicker-dateto"
               v-model="dateTo"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
-              initial-date="2019-09-13"
+              initial-date="2020-01-17"
               
               placeholder="До"
               locale="ru"
@@ -35,11 +35,31 @@
     <div class="row">
       <div class="col-lg-12">
         <b-input-group>
+          
+          <template v-slot:prepend>
+            <b-input-group-text >Объект</b-input-group-text>
+          </template>
+          <b-form-select 
+            id="objectsList" 
+            text-field="name"
+            value-field="name"
+            v-model="prjMarkFilter"
+            :options="$route.params.objects" 
+            :disabled="!showTable"
+            ref="objectsList"
+            >
+            <template v-slot:first>
+              <b-form-select-option value="null" enabled>События всех объектов</b-form-select-option>
+            </template>
+          </b-form-select>
+        </b-input-group>
+
+        <b-input-group>
           <template v-slot:prepend>
             <b-input-group-text >Тип события</b-input-group-text>
           </template>
           <b-form-select 
-            v-model="filter"
+            v-model="msgTypeFilter"
             :options="filterMsgTypeOptions" 
             :disabled="!showTable"
             >
@@ -73,10 +93,14 @@
           :per-page="perPage"
           :current-page="currentPage"
           :filter="filter"
-          :filter-function="filterMsgType"
+          :filter-function="filterTable"
           small
           hover
+
           sortable=true
+          sort-by="date_time"
+          sort-desc=true
+          
           height='800px'
           class="mt-3 h-100" 
           outlined
@@ -132,8 +156,9 @@ export default {
         103: 'success'
       },
 
-      filterOn: ['msg_type'],
-      filter: null,
+      filterOn: ['msg_type', 'prj_mark'],
+      prjMarkFilter: null,
+      msgTypeFilter: null,
       filterMsgTypeOptions: [
         { value: null, text: 'Все'},
         { value: '3', text: 'Неисправность оборудования'},
@@ -146,7 +171,12 @@ export default {
     async prepareTableData(){
       if(this.dateFrom != null && this.dateTo != null){
         this.showTable = true;
-        this.tableData = (await this.axios.get(`${api.host}/event/${this.dateFrom}/${this.dateTo}/data`)).data;
+        for (let i = 0; i < this.$route.params.objects.length; i++) {
+          var query = `${api.host}/event/${this.$route.params.objects[i]}/${this.dateFrom}/${this.dateTo}/data`;
+          var objectEvents = (await this.axios.get(query)).data;
+          this.tableData = this.tableData.concat(objectEvents);          
+        }
+        console.log(this.tableData);
         for (let i = 0; i < this.tableData.length; i++) {
           const event = this.tableData[i];
           event._rowVariant = this.rowColors[event.msg_type];
@@ -154,12 +184,23 @@ export default {
         }
         this.totalRows = this.tableData.length;
         this.isBusy = false;
+        
         return;
       }
       alert("Выберите интервал времени!");
     },
-    filterMsgType(item, msgType){
-      return item['msg_type'] == msgType;
+    filterTable(item, filter){
+      var filterParams = {        
+        prjMark: filter.split('|')[0] == "null" ? "null" : filter.split('|')[0].split('_')[1],
+        msgType: filter.split('|')[1]
+      }
+      if(filterParams.msgType == "null" && filterParams.prjMark == "null")
+        return true;
+      if(filterParams.msgType == 'null')
+        return item['msg_prjmark'] == filterParams.prjMark;
+      if(filterParams.prjMark == 'null')
+        return item['msg_type'] == filterParams.msgType;
+      return item['msg_type'] == filterParams.msgType && item['msg_prjmark'] == filterParams.prjMark;
     },
     onFiltered(filteredItems) {
       this.totalRows = filteredItems.length;
@@ -167,6 +208,9 @@ export default {
     }
   },
   computed: {
+    filter() {
+      return `${this.prjMarkFilter}|${this.msgTypeFilter}`;
+    }
   },
   
   created() {

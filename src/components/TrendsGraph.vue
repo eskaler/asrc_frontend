@@ -13,7 +13,7 @@
               v-model="dateFrom"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
               
-              initial-date="2019-09-05"
+              initial-date="2020-02-28"
               placeholder="От"
               locale="ru"
           ></b-form-datepicker>
@@ -21,7 +21,7 @@
               id="datepicker-dateto"
               v-model="dateTo"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
-              initial-date="2019-09-13"
+              initial-date="2020-03-31"
               
               placeholder="До"
               locale="ru"
@@ -58,7 +58,9 @@
     </div>
     <div class="row">
       <div class="col-lg-8">
-        <vue-plotly :data="graphData" :layout="layout" :options="options" ref="plotlyGraph" style="height:800px"/>
+        <vue-plotly :data="graphData" :layout="layout" :options="options" 
+          v-on:doubleclick="resetyaxis"
+          ref="plotlyGraph" style="height:800px"/>
       </div>
       <div class="col-lg-4" v-if="selectedObjectName!=[]">
         <b-table 
@@ -114,6 +116,8 @@ export default {
       dateTo: null,
       dateFrom: null,
 
+      yaxis: [],
+
       layout:  {
         yaxis: {
           type: 'linear',
@@ -139,7 +143,7 @@ export default {
           click: this.switchLogLinear,
           icon: logIcon
         }],
-        modeBarButtonsToRemove: ['lasso2d']
+        modeBarButtonsToRemove: ['lasso2d', 'select2d']
       },
 
       // isBusy: true,
@@ -181,6 +185,15 @@ export default {
     }
   },
   methods: {
+    resetyaxis(){
+      console.log('resetaxis', this.yaxis);
+      if(this.yaxis.length > 0){
+        this.layout.yaxis.autorange = false;
+        this.layout.yaxis.range = [...this.yaxis];
+        
+      }
+        
+    },
     async prepareGraphData(){
       if(this.dateFrom != null && this.dateTo != null){
         this.objectsData = [];
@@ -201,6 +214,8 @@ export default {
       this.graphData = [];
       //если выбраны все объекты
       if(value == "all"){
+        this.layout.shapes = [];
+        this.layout.yaxis.autorange = true;
         this.graphData = this.objectsData;
         this.layout.yaxis.domain = [0,1];
         await this.$refs.plotlyGraph.react();
@@ -219,6 +234,15 @@ export default {
 
           this.fields[1].key = object.ydescription;
           this.$refs.plotlyGraph.react();
+
+          console.log('wtf', object.yaxisRange);
+          this.layout.yaxis.range = [...object.yaxisRange];
+          this.yaxis = [...object.yaxisRange];
+
+          this.layout.yaxis.autorange = false;
+          this.layout.shapes = object.shapes;
+          this.options.doubleClick = 'reset';
+          
           return;
         }
       }
@@ -234,7 +258,10 @@ export default {
         this.layout[`yaxis${signal.yaxisNumber}`] = { 
           showticklabels:false,
           domain: [j * part, j * part + part], 
-          anchor: signal.yaxis};
+          anchor: signal.yaxis,
+          fixedrange: true
+
+          };
         this.graphData.push(signal); 
       }
     },
@@ -245,7 +272,7 @@ export default {
         var newData = {signals:[], upRange: {}, downRange: {}, y: []};
         var signalsCounter = 2;
         var dataQuery = "";
-        
+        this.layout.yaxis.range=[];
         //поиск столбца даты
         newData.x = (await this.axios.get(`${api.host}/object/${tableName}/date_time/${this.dateFrom}/${this.dateTo}/data`)).data['date_time'];
 
@@ -256,22 +283,8 @@ export default {
           if(column.description == 'value'){
             newData.y  = (await this.axios.get(dataQuery)).data[column.columnname];
             newData.ydescription = column.columnname;
-          }
-          if(column.description == 'upRange'){
-            newData.upRange.y = (await this.axios.get(dataQuery)).data[column.columnname];
-            newData.upRange.x = newData.x;
-            newData.upRange.name = 'Верхний порог';
-            newData.upRange.type = 'scatter';
-            newData.upRange.fill = 'tozeroy';
-            newData.upRange.line = { color: 'rgb(255, 0, 0)'};
-          }
-          if(column.description == 'downRange'){
-            newData.downRange.y = (await this.axios.get(dataQuery)).data[column.columnname];
-            newData.downRange.x = newData.x;
-            newData.downRange.name = 'Нижний порог';
-            newData.downRange.type = 'scatter';
-            newData.downRange.fill = 'tozeroy';
-            newData.downRange.line = { color: 'rgb(0, 255, 0)'};
+            newData.yaxisRange = (await this.axios.get(`${api.host}/object/${tableName}/${column.columnname}/${this.dateFrom}/${this.dateTo}/minmax`)).data;
+            console.log('yaxis.range', newData.yaxisRange);
           }
           if(column.datatype == "boolean"){
             var signalData = {};
@@ -280,12 +293,13 @@ export default {
               signalData[j] = Number(signalData[j]);
             }
             signalData.x = newData.x;
-            signalData.type = 'bar';
-            signalData.width = 1.01;
+            signalData.type = 'lines+points';
+            signalData.fill = 'tozeroy';
             signalData.name = column.columnname;
             signalData.yaxis = `y${signalsCounter}`;
             signalData.yaxisNumber = signalsCounter;
-
+            signalData.type = 'scatter';
+            signalData.line= {shape: 'hv'};
             signalsCounter++;
             
             newData.signals.push(signalData);
@@ -302,9 +316,13 @@ export default {
             }
           }
         }
+
+        newData.shapes =  (await this.axios.get( `${api.host}/object/${tableName}/threshold/shapes`)).data;
+        
+
         newData.type = 'scatter';
         newData.line= {shape: 'hv'};
-        newData.mode = 'lines+markers';
+        newData.mode = 'lines';
         newData.name = tableName;
         newData.text = tableName;
         
@@ -313,11 +331,13 @@ export default {
       })
     },
 
+
     switchLogLinear(){
       if(this.layout.yaxis.type == "log"){
         this.layout.yaxis.type = "linear"
       }
       else{
+        this.layout.yaxis.range
         this.layout.yaxis.type = "log"
       }
     }

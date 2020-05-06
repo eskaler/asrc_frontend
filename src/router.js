@@ -27,7 +27,7 @@ export default new Router({
       component: () => import(/* webpackChunkName: "trendstable" */ './components/TrendsTable.vue'),
     },
     {
-      path: '/events',
+      path: '/events/:objects+',
       name: 'events',
       component: () => import(/* webpackChunkName: "events" */ './components/Events.vue'),
     }

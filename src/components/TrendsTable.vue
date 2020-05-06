@@ -151,14 +151,25 @@ export default {
       //если выбран конкретный объект
       for (let i = 0; i < this.objectsData.length; i++) {
         let object = this.objectsData[i];
-        // console.log('checking object', object);
+        console.log('checking object', object);
         if(object.name == value){
           this.fields = [];
           Object.keys(object.data[0]).forEach(element => {
-              this.fields.push({
+            var field = {
               key: element,
-              sortable: true
-            })           
+              sortable: true,
+            }
+            var temp = object.data[0][element];
+            console.log('element is:', temp, "| typeof is:", typeof(temp),  '| result is:', temp == "true" || temp == "false");
+            if(typeof(temp)=='boolean'){
+              field.formatter = (value) => {
+                return value  ? '✓' : ''
+              }
+            }
+            // console.log(object.data[0][0], typeof(object.data[0][0]));
+            // if(typeof(object.data[0][0]) == 'boolean')
+              
+            this.fields.push(field);
           });
           this.tableData = object.data;
           return;
@@ -189,5 +200,13 @@ export default {
 </script>
 
 <style>
-
+.rotate th {
+             filter:  progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083);  /* IE6,IE7 */
+         -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
+     -moz-transform: rotate(-90.0deg);  /* FF3.5+ */
+      -ms-transform: rotate(-90.0deg);  /* IE9+ */
+       -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
+  -webkit-transform: rotate(-90.0deg);  /* Safari 3.1+, Chrome */
+          transform: rotate(-90.0deg);  /* Standard */
+}
 </style>

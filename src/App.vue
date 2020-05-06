@@ -7,11 +7,11 @@
         <div id="navbarMenu">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <router-link to="/trends" class="nav-link" active-class="active">Тренды</router-link>
+                    <router-link to="/trends" class="nav-link" active-class="active">Архивные данные</router-link>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <router-link to="/events" class="nav-link" active-class="active">События</router-link>
-                </li>
+                </li> -->
             </ul>
         </div>
 
