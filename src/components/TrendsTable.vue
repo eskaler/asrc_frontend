@@ -1,11 +1,11 @@
 <template>
   <div id="trends-table" class="h-100">
-    <h1>Таблица</h1>    
+    <!-- <h1>Таблица</h1>     -->
     <div class="row">
-      <div class="col-lg-11">
+      <div class="col-lg-5">
         <b-input-group>
           <template v-slot:prepend>
-            <b-input-group-text >Временной интервал</b-input-group-text>
+            <b-input-group-text >Врем. интервал</b-input-group-text>
           </template>
           <!-- @input="setDateInterval" -->
             <b-form-datepicker
@@ -13,7 +13,7 @@
               v-model="dateFrom"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
               
-              initial-date="2019-09-05"
+              initial-date="2020-03-15"
               placeholder="От"
               locale="ru"
           ></b-form-datepicker>
@@ -21,19 +21,14 @@
               id="datepicker-dateto"
               v-model="dateTo"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
-              initial-date="2019-09-13"
+              initial-date="2020-03-20"
               
               placeholder="До"
               locale="ru"
           ></b-form-datepicker>
         </b-input-group>
       </div>  
-      <div class="col-lg-1">
-        <b-button variant="outline-primary" @click="prepareTableData">Таблица</b-button>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12">
+      <div class="col-lg-5">
         <b-input-group>
           <template v-slot:prepend>
             <b-input-group-text >Объект</b-input-group-text>
@@ -52,9 +47,12 @@
           </b-form-select>
         </b-input-group>
       </div>
+      <div class="col-lg-1">
+        <b-button variant="outline-primary" @click="prepareTableData">Просмотр</b-button>
+      </div>
     </div>
 
-    <div class="row">
+    <div class="row mt-4">
       <div class="col-lg-12">
         <b-pagination
           v-model="currentPage"

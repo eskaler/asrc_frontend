@@ -1,19 +1,18 @@
 <template>
   <div id="trends-graph">
-    <h2>График</h2>    
+    <!-- <h4>График</h4>     -->
     <div class="row">
-      <div class="col-lg-11">
+      <div class="col-lg-5">
         <b-input-group>
           <template v-slot:prepend>
-            <b-input-group-text >Временной интервал</b-input-group-text>
+            <b-input-group-text >Врем. интервал</b-input-group-text>
           </template>
           <!-- @input="setDateInterval" -->
             <b-form-datepicker
               id="datepicker-datefrom"
               v-model="dateFrom"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
-              
-              initial-date="2020-02-28"
+              initial-date="2020-03-15"
               placeholder="От"
               locale="ru"
           ></b-form-datepicker>
@@ -21,19 +20,13 @@
               id="datepicker-dateto"
               v-model="dateTo"
               :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
-              initial-date="2020-03-31"
-              
+              initial-date="2020-03-20"
               placeholder="До"
               locale="ru"
           ></b-form-datepicker>
         </b-input-group>
-      </div>  
-      <div class="col-lg-1">
-        <b-button variant="outline-primary" @click="prepareGraphData">График</b-button>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12">
+      <div class="col-lg-5">
         <b-input-group>
           <template v-slot:prepend>
             <b-input-group-text >Объект</b-input-group-text>
@@ -53,6 +46,14 @@
             </template>
           </b-form-select>
         </b-input-group>
+      </div>
+      <div class="col-lg-1">
+        <b-button variant="outline-primary" @click="prepareGraphData">Просмотр</b-button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-12">
+        
       </div>
       
     </div>
@@ -260,7 +261,6 @@ export default {
           domain: [j * part, j * part + part], 
           anchor: signal.yaxis,
           fixedrange: true
-
           };
         this.graphData.push(signal); 
       }
@@ -293,7 +293,7 @@ export default {
               signalData[j] = Number(signalData[j]);
             }
             signalData.x = newData.x;
-            signalData.type = 'lines+points';
+            signalData.mode = 'lines';
             signalData.fill = 'tozeroy';
             signalData.name = column.columnname;
             signalData.yaxis = `y${signalsCounter}`;
@@ -319,7 +319,6 @@ export default {
 
         newData.shapes =  (await this.axios.get( `${api.host}/object/${tableName}/threshold/shapes`)).data;
         
-
         newData.type = 'scatter';
         newData.line= {shape: 'hv'};
         newData.mode = 'lines';

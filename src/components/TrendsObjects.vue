@@ -89,18 +89,18 @@
             </div>
 
           </div>
-          <div class="col-lg-1 justify-content-center ml-3">
-            <div class="row">
-              <b-button variant="success" @click="addSelectedObjects">
-                <b-icon icon="arrow-right"></b-icon> Добавить объект</b-button>
-            </div>
-            <div class="row">
-              <b-button variant="danger" @click="removeSelectedObjects">
-                <b-icon icon="arrow-left"></b-icon> Удалить объект</b-button>  
-            </div>
-            <div class="row">
-              <b-button variant="danger" @click="removeAllSelectedObjects">
-                <b-icon icon="arrow-left"></b-icon> Удалить все</b-button>  
+          <div class="col-lg-2 justify-content-center ml-3">
+            <div class="span2">
+              <p><b-button variant="success" class="btn-block" @click="addSelectedObjects">
+                <b-icon icon="play"></b-icon> Добавить</b-button></p>
+            
+            
+              <p><b-button variant="danger" class="btn-block" @click="removeSelectedObjects">
+                <b-icon icon="caret-left"></b-icon> Удалить</b-button></p>
+            
+            
+              <p><b-button variant="danger" class="btn-block" @click="removeAllSelectedObjects">
+                <b-icon icon="skip-backward"></b-icon> Удалить все</b-button></p>
             </div>
           </div>
           <div class="col-lg">

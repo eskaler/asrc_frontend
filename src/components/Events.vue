@@ -1,11 +1,11 @@
 <template>
   <div id="trends-table" class="h-100">
-    <h1>События</h1>    
+    <!-- <h1>События</h1>     -->
     <div class="row">
-      <div class="col-lg-10">
+      <div class="col-lg-4">
         <b-input-group>
           <template v-slot:prepend>
-            <b-input-group-text >Временной интервал</b-input-group-text>
+            <b-input-group-text >Врем. интервал</b-input-group-text>
           </template>
           <!-- @input="setDateInterval" -->
             <b-form-datepicker
@@ -28,12 +28,7 @@
           ></b-form-datepicker>
         </b-input-group>
       </div>  
-      <div class="col-lg-2">
-        <b-button variant="outline-primary" @click="prepareTableData">Просмотр событий</b-button>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-12">
+      <div class="col-lg-3">
         <b-input-group>
           
           <template v-slot:prepend>
@@ -53,7 +48,8 @@
             </template>
           </b-form-select>
         </b-input-group>
-
+      </div>
+      <div class="col-lg-3">
         <b-input-group>
           <template v-slot:prepend>
             <b-input-group-text >Тип события</b-input-group-text>
@@ -66,9 +62,13 @@
           </b-form-select>
         </b-input-group>
       </div>
+
+      <div class="col-lg-1">
+        <b-button variant="outline-primary" @click="prepareTableData">Просмотр</b-button>
+      </div>
     </div>
 
-    <div class="row">
+    <div class="row mt-4">
       <div class="col-lg-12">
         <b-pagination
           v-model="currentPage"
@@ -142,8 +142,8 @@ export default {
       fields: [
         { key: 'date_time',   label: 'Время'},
         { key: 'msg_prjmark', label: 'Объект'},
-        { key: 'msg_user',    label: 'Пользователь'},
-        { key: 'msg_text',    label: 'Текст сообщения'},        
+        { key: 'msg_user',    label: 'Инициатор'},
+        { key: 'msg_text',    label: 'Сообщение'},        
       ],
 
       // isBusy: true,
@@ -162,7 +162,7 @@ export default {
       filterMsgTypeOptions: [
         { value: null, text: 'Все'},
         { value: '3', text: 'Неисправность оборудования'},
-        { value: '103', text: 'Восстановление работоспособности оборудования, значение контролируемого параметра ниже порогового'}
+        { value: '103', text: 'Восстановление работоспособности оборудования'}
       ]
 
     }

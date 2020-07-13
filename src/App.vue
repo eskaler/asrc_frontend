@@ -2,8 +2,8 @@
   <div id="app" style="height: 1024px">
     <!-- https://getbootstrap.com/docs/4.0/examples/starter-template/?# -->
   
-  <nav class="navbar navbar-expand-sm navbar-dark bg-dark">
-        <a href="#" class="navbar-brand">АСРК. Визуализация архивных данных</a>
+  <nav class="navbar navbar-expand-sm navbar-dark" style="background: #003274">
+        <a href="#" class="navbar-brand">АСРК</a>
         <div id="navbarMenu">
             <ul class="navbar-nav">
                 <li class="nav-item">
